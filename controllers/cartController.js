@@ -3,9 +3,65 @@ import { db } from "../config/db.js";
 // ==================================================
 // ADD TO CART
 // ==================================================
-export const addToCart = async (req, res) => {
-  const { user_id, flyer_id } = req.body;
+// export const addToCart = async (req, res) => {
+//   const { user_id, flyer_id } = req.body;
 
+//   if (!user_id || !flyer_id) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "user_id and flyer_id are required",
+//     });
+//   }
+
+//   try {
+//     // Check if already in cart
+//     const [existing] = await db.execute(
+//       `SELECT id FROM cart WHERE user_id = ? AND flyer_id = ? AND status = 'active'`,
+//       [user_id, flyer_id]
+//     );
+
+//     if (existing.length > 0) {
+//       return res.status(200).json({
+//         success: true,
+//         message: "Item is already in your cart",
+//       });
+//     }
+
+//     // Insert
+//     await db.execute(
+//       `INSERT INTO cart (user_id, flyer_id, added_time, status)
+//        VALUES (?, ?, NOW(), 'active')`,
+//       [user_id, flyer_id]
+//     );
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Item added to cart successfully!",
+//     });
+
+//   } catch (error) {
+//     console.error("❌ addToCart error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//     });
+//   }
+// };
+
+
+export const addToCart = async (req, res) => {
+  const {
+    user_id,
+    flyer_id,
+    presenting,
+    event_title,
+    image_url,
+    event_date,
+    address_phone,
+    delivery_time
+  } = req.body;
+
+  // Validate required fields
   if (!user_id || !flyer_id) {
     return res.status(400).json({
       success: false,
@@ -16,7 +72,8 @@ export const addToCart = async (req, res) => {
   try {
     // Check if already in cart
     const [existing] = await db.execute(
-      `SELECT id FROM cart WHERE user_id = ? AND flyer_id = ? AND status = 'active'`,
+      `SELECT id FROM cart 
+       WHERE user_id = ? AND flyer_id = ? AND status = 'active'`,
       [user_id, flyer_id]
     );
 
@@ -27,11 +84,21 @@ export const addToCart = async (req, res) => {
       });
     }
 
-    // Insert
+    // Insert new row with new columns
     await db.execute(
-      `INSERT INTO cart (user_id, flyer_id, added_time, status)
-       VALUES (?, ?, NOW(), 'active')`,
-      [user_id, flyer_id]
+      `INSERT INTO cart 
+        (user_id, flyer_id, presenting, event_title, image_url, date, address_and_phone, delivery_time, added_time, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'active')`,
+      [
+        user_id,
+        flyer_id,
+        presenting || "",
+        event_title || "",
+        image_url || "",
+        event_date || null,         // event_date → date column
+        address_phone || "",
+        delivery_time || ""
+      ]
     );
 
     res.status(201).json({
@@ -47,6 +114,12 @@ export const addToCart = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
 
 // ==================================================
 // GET USER CART
